@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 // Mocked DB
@@ -15,26 +14,21 @@ const posts: Post[] = [
 ];
 
 export const postRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
+  status: publicProcedure
+    .query(async () => {
+      const data = await fetch("http://10.0.43.192")
+      return data.json()
     }),
+  
+  seating: publicProcedure
+    .query(async () => {
+      const today = new Date();
+      const day = today.getDate();
 
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ input }) => {
-      const post: Post = {
-        id: posts.length + 1,
-        name: input.name,
-      };
-      posts.push(post);
-      return post;
-    }),
-
-  getLatest: publicProcedure.query(() => {
-    return posts.at(-1) ?? null;
+      if (day % 2 === 0) {
+        return "Harvey";
+      } else {
+        return "Andrew";
+      }
   }),
 });

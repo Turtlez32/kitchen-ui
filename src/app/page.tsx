@@ -1,51 +1,60 @@
 import Link from "next/link";
-
-import { LatestPost } from "~/app/_components/post";
-import { api, HydrateClient } from "~/trpc/server";
+import { useCallback } from "react";
+import useWebSocket, {ReadyState} from "react-use-websocket";
+import { api ,HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
+  const data = await api.post.status();
+  const seat = await api.post.seating();
+  const payload = {
+    lang: "en_us",
+    service: "runtime",
+  }
+  const socketUrl = "ws://10.0.44.144:8082/ws/home/overview";
+  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
+  const handleClickSendMessage = useCallback(() => sendMessage(JSON.stringify(payload)), []);
 
-  void api.post.getLatest.prefetch();
+  const connectionStatus = {
+    [ReadyState.CONNECTING]: 'Connecting',
+    [ReadyState.OPEN]: 'Open',
+    [ReadyState.CLOSING]: 'Closing',
+    [ReadyState.CLOSED]: 'Closed',
+    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
+  }[readyState];
+  //const power = await api.post.power();
+  //console.log(power);
 
   return (
-    <HydrateClient>
+    <HydrateClient> 
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
+          
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
             <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
+              className="flex flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
               href="https://create.t3.gg/en/usage/first-steps"
               target="_blank"
             >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
+              <h3 className="text-2xl font-bold">Server Room Information</h3>
               <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
+                  <h1>
+                    Temperature: {data.temp.temperature}
+                    Pressure: {data.temp.pressure}
+                    Humidity: {data.temp.humidity}
+                  </h1>
               </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
-            >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
+              <h3 className="text-2xl font-bold">Seat Near Kitchen</h3>
               <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
+                  <h1>
+                    {seat}
+                  </h1>
+                  <button
+                  onClick={handleClickSendMessage}
+                  disabled={readyState !== ReadyState.OPEN}> Click For Stats </button>
+                  <span>The WebSocket is currently {connectionStatus}</span>
               </div>
             </Link>
           </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-          </div>
-
-          <LatestPost />
         </div>
       </main>
     </HydrateClient>
