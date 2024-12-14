@@ -10,17 +10,9 @@ export default async function Home() {
     lang: "en_us",
     service: "runtime",
   }
-  const socketUrl = "ws://10.0.44.144:8082/ws/home/overview";
-  const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
-  const handleClickSendMessage = useCallback(() => sendMessage(JSON.stringify(payload)), []);
-
-  const connectionStatus = {
-    [ReadyState.CONNECTING]: 'Connecting',
-    [ReadyState.OPEN]: 'Open',
-    [ReadyState.CLOSING]: 'Closing',
-    [ReadyState.CLOSED]: 'Closed',
-    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
-  }[readyState];
+  // const socketUrl = "ws://10.0.44.144:8082/ws/home/overview";
+  // const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
+  // const handleClickSendMessage = useCallback(() => sendMessage(JSON.stringify(payload)), []);
   //const power = await api.post.power();
   //console.log(power);
 
@@ -48,10 +40,6 @@ export default async function Home() {
                   <h1>
                     {seat}
                   </h1>
-                  <button
-                  onClick={handleClickSendMessage}
-                  disabled={readyState !== ReadyState.OPEN}> Click For Stats </button>
-                  <span>The WebSocket is currently {connectionStatus}</span>
               </div>
             </Link>
           </div>
